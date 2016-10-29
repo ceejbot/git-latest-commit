@@ -45,7 +45,7 @@ pub fn write <P: AsRef<Path>>(topdir: P) -> Result<(), Error>
     let sumbytes = commit.summary_bytes().unwrap();
     let summary = std::str::from_utf8(&sumbytes).unwrap();
 
-    let content = format!("static GIT_HASH: &'static str = \"{}\";\nstatic GIT_SUMMARY: &' static str = \"{}\";",
+    let content = format!("static GIT_HASH: &'static str = \"{}\";\nstatic GIT_SUMMARY: &'static str = \"{}\";",
         oid, summary);
 
     let has_changes = if path.exists()
