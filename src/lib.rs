@@ -20,13 +20,13 @@ quick_error!
     }
 }
 
-fn content_unchanged<P: AsRef<Path>>(path: P, content: &str) -> Result<bool, Error>
+fn content_differs<P: AsRef<Path>>(path: P, content: &str) -> Result<bool, Error>
 {
     let mut f = try!(File::open(path));
     let mut current = String::new();
     try!(f.read_to_string(&mut current));
 
-    Ok(current == content)
+    Ok(current != content)
 }
 
 
@@ -37,7 +37,7 @@ pub fn write_version <P: AsRef<Path>>(topdir: P) -> Result<(), Error>
 
     try!(create_dir_all(path));
 
-    let path = path.join("version.rs");
+    let path = path.join("git-commit.rs");
 
     let repo = try!(Repository::discover(topdir));
     let oid = try!(repo.refname_to_id("HEAD"));
@@ -46,16 +46,16 @@ pub fn write_version <P: AsRef<Path>>(topdir: P) -> Result<(), Error>
     let sumbytes = commit.summary_bytes().unwrap();
     let summary = std::str::from_utf8(&sumbytes).unwrap();
 
-    let content = format!("static GIT_HASH: &'static str = {};\nstatic GIT_SUMMARY: &' static str = {}",
+    let content = format!("static GIT_HASH: &'static str = \"{}\";\nstatic GIT_SUMMARY: &' static str = \"{}\";",
         oid, summary);
 
-    let is_fresh = if path.exists()
+    let has_changes = if path.exists()
     {
-        try!(content_unchanged(&path, &content))
+        try!(content_differs(&path, &content))
     }
-    else { false };
+    else { true };
 
-    if !is_fresh
+    if has_changes
     {
       let mut file = BufWriter::new(try!(File::create(&path)));
       try!(write!(file, "{}", content));
