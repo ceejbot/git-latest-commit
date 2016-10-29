@@ -2,24 +2,22 @@ extern crate git2;
 #[macro_use]
 extern crate quick_error;
 
-use git2::{Repository, DescribeOptions};
-use std::env;
-use std::convert::AsRef;
-use std::fs::{File, create_dir_all};
-use std::io::{Write, Read, BufWriter};
-use std::path::Path;
-
-// git log --oneline --abbrev-commit  -n 1
-// git rev-parse --short HEAD
+use git2::Repository;
 
 fn main()
 {
-    let repo = try!(Repository::discover("."));
-    // let shahead = try!(repo.revparse());
-    let desc = try!(repo.describe(&DescribeOptions::new().describe_tags().show_commit_oid_as_fallback(true)));
-    println!("sha: {:?}", desc);
+    let repo = Repository::discover("/Users/ceej/Dropbox/projects/rusty-things/git-latest-commit").unwrap();
+    let oid_o = repo.refname_to_id("HEAD");
 
-    // let content = format!("static VERSION: &'static str = {:?};\n", try!(desc.format(None)));
+    let oid = match oid_o
+    {
+        Ok(v) => v,
+        Err(_) => { std::process::exit(0); },
+    };
+    println!("sha: {:?}", oid);
 
-    Ok(())
+    let mut commit = repo.find_commit(oid).unwrap();
+    let sumbytes = commit.summary_bytes().unwrap();
+    let summary = std::str::from_utf8(&sumbytes).unwrap();
+    println!("mesg: {:?}", summary);
 }

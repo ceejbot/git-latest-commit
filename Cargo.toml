@@ -5,5 +5,6 @@ version = "0.1.0"
 authors = ["C J Silverio <ceejceej@gmail.com>"]
 
 [dependencies]
-quick-error = "1.1.0"
+crc64 = "1.0.0"
 git2 = "0.5.0"
+quick-error = "1.1.0"

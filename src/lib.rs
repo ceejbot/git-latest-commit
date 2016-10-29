@@ -2,15 +2,33 @@ extern crate git2;
 #[macro_use]
 extern crate quick_error;
 
-use git2::{Repository, DescribeOptions};
-use std::env;
+use git2::Repository;
 use std::convert::AsRef;
+use std::env;
 use std::fs::{File, create_dir_all};
 use std::io::{Write, Read, BufWriter};
 use std::path::Path;
 
-// git log --oneline --abbrev-commit  -n 1
-// git rev-parse --short HEAD
+quick_error!
+{
+    #[derive(Debug)]
+    pub enum Error
+    {
+        Io(err: std::io::Error) { from() }
+        Git(err: git2::Error) { from() }
+        MissingEnvVar { }
+    }
+}
+
+fn content_unchanged<P: AsRef<Path>>(path: P, content: &str) -> Result<bool, Error>
+{
+    let mut f = try!(File::open(path));
+    let mut current = String::new();
+    try!(f.read_to_string(&mut current));
+
+    Ok(current == content)
+}
+
 
 pub fn write_version <P: AsRef<Path>>(topdir: P) -> Result<(), Error>
 {
@@ -22,18 +40,20 @@ pub fn write_version <P: AsRef<Path>>(topdir: P) -> Result<(), Error>
     let path = path.join("version.rs");
 
     let repo = try!(Repository::discover(topdir));
-    let desc = try!(repo.describe(&DescribeOptions::new().describe_tags().show_commit_oid_as_fallback(true)));
+    let oid = try!(repo.refname_to_id("HEAD"));
 
-    let content = format!("static VERSION: &'static str = {:?};\n", try!(desc.format(None)));
+    let mut commit = repo.find_commit(oid).unwrap();
+    let sumbytes = commit.summary_bytes().unwrap();
+    let summary = std::str::from_utf8(&sumbytes).unwrap();
+
+    let content = format!("static GIT_HASH: &'static str = {};\nstatic GIT_SUMMARY: &' static str = {}",
+        oid, summary);
 
     let is_fresh = if path.exists()
     {
-        try!(same_content_as(&path, &content))
+        try!(content_unchanged(&path, &content))
     }
-    else
-    {
-        false
-    };
+    else { false };
 
     if !is_fresh
     {
