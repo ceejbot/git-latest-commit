@@ -1,7 +1,7 @@
 [package]
 name = "git-latest-commit"
 description = "Add data about the latest git commit for a project at build time, for run-time reporting."
-version = "0.1.0"
+version = "0.1.1"
 authors = ["C J Silverio <ceejceej@gmail.com>"]
 homepage = "https://github.com/ceejbot/git-latest-commit"
 repository = "https://github.com/ceejbot/git-latest-commit"
@@ -9,6 +9,5 @@ license = "ISC"
 readme = "README.md"
 
 [dependencies]
-crc64 = "1.0.0"
 git2 = "0.5.0"
 quick-error = "1.1.0"
