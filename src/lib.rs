@@ -29,8 +29,7 @@ fn content_differs<P: AsRef<Path>>(path: P, content: &str) -> Result<bool, Error
     Ok(current != content)
 }
 
-
-pub fn write_version <P: AsRef<Path>>(topdir: P) -> Result<(), Error>
+pub fn write <P: AsRef<Path>>(topdir: P) -> Result<(), Error>
 {
     let path = try!(env::var_os("OUT_DIR").ok_or(Error::MissingEnvVar));
     let path : &Path = path.as_ref();
