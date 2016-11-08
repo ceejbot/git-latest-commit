@@ -12,7 +12,7 @@ name = "something-gratuitously-mentioning-rust"
 build = "build.rs"
 
 [build-dependencies]
-git-latest-commit = "0.1.1"
+git-latest-commit = "0.1.3"
 ```
 
 Then, in `build.rs` at the top level of your project:
